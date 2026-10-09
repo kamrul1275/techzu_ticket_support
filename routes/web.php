@@ -88,7 +88,7 @@ Route::patch('/{ticket}/resolve', [
 ])->name('resolve');
 
 
-Route::patch('/{ticket}/close', [
-    TicketController::class, 'close'
-])->name('close');
+// Route::patch('/{ticket}/close', [
+//     TicketController::class, 'close'
+// ])->name('close');
     });
