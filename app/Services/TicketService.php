@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class TicketService
 {
@@ -146,6 +147,76 @@ class TicketService
                 ],
                 'new_values' => [
                     'status' => 'closed',
+                ],
+            ]);
+
+            return $ticket;
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+      /**
+     * Assign a ticket to a support agent.
+     */
+    public function assignTicket(
+        Ticket $ticket,
+        User $admin,
+        int $agentId
+    ): Ticket {
+
+        return DB::transaction(function () use ($ticket, $admin, $agentId) {
+
+            // Lock ticket to prevent simultaneous changes
+            $ticket = Ticket::whereKey($ticket->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            // Do not assign completed tickets
+            if (in_array($ticket->status, ['resolved', 'closed'], true)) {
+                throw ValidationException::withMessages([
+                    'agent_id' => 'Completed tickets cannot be assigned.',
+                ]);
+            }
+
+            // Find selected support agent
+            $agent = User::where('role', 'agent')
+                ->findOrFail($agentId);
+
+            // Avoid duplicate assignment history
+            if ($ticket->assigned_agent_id === $agent->id) {
+                return $ticket;
+            }
+
+            $previousAgentId = $ticket->assigned_agent_id;
+
+            // Update current assigned agent
+            $ticket->assigned_agent_id = $agent->id;
+            $ticket->save();
+
+            // Save assignment history
+            $ticket->assignments()->create([
+                'agent_id' => $agent->id,
+                'assigned_by' => $admin->id,
+                'method' => 'manual',
+            ]);
+
+            // Save ticket activity
+            $ticket->activities()->create([
+                'user_id' => $admin->id,
+                'action' => 'assigned',
+                'old_values' => [
+                    'assigned_agent_id' => $previousAgentId,
+                ],
+                'new_values' => [
+                    'assigned_agent_id' => $agent->id,
                 ],
             ]);
 

@@ -101,13 +101,27 @@
                                 {{ $ticket->created_at->format('d M Y') }}
                             </td>
 
-                            {{-- Action --}}
-                            <td>
-                                <a href="{{ route('tickets.show', $ticket) }}"
-                                   class="ticket-view-btn">
-                                    View Details
-                                </a>
-                            </td>
+                         
+                {{-- Action --}}
+                <td>
+                    <div class="ticket-actions">
+
+                        {{-- View Details --}}
+                        <a href="{{ route('tickets.show', $ticket) }}"
+                        class="ticket-view-btn">
+                            View
+                        </a>
+
+                        {{-- Edit Ticket --}}
+                        @can('update', $ticket)
+                            <a href="{{ route('tickets.edit', $ticket) }}"
+                            class="ticket-edit-btn">
+                                Edit
+                            </a>
+                        @endcan
+
+                    </div>
+                </td>
                         </tr>
 
                     @empty

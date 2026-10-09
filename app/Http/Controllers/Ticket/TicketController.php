@@ -7,6 +7,7 @@ use App\Http\Requests\StoreTicketRequest;
 use App\Http\Requests\UpdateTicketRequest;
 use App\Models\Ticket;
 use App\Models\TicketCategory;
+use App\Models\User;
 use App\Services\TicketService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -14,6 +15,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
 use Throwable;
 
 class TicketController extends Controller
@@ -126,125 +129,188 @@ class TicketController extends Controller
      * JSON response for now.
      * Blade details page will be added next.
      */
-    public function show(Ticket $ticket): JsonResponse
-    {
-        Gate::authorize('view', $ticket);
 
-        try {
+/**
+ * Show ticket details page.
+ */
+public function show(Ticket $ticket): View|RedirectResponse
+{
+    // Check whether the user can view this ticket
+    Gate::authorize('view', $ticket);
+
+    try {
+        // Load ticket-related information
+        $ticket->load([
+            'customer:id,name',
+            'assignedAgent:id,name',
+            'category:id,name',
+        ]);
+
+        // Show audit history to authorized staff only
+        $user = auth()->user();
+
+        if ($user->isAdmin() || $user->isAgent()) {
             $ticket->load([
-                'customer:id,name',
-                'assignedAgent:id,name',
-                'category:id,name',
+                'activities.user:id,name',
             ]);
-
-            return response()->json([
-                'ticket' => $ticket,
-            ]);
-
-        } catch (Throwable $e) {
-
-            return $this->handleError(
-                $e,
-                'view',
-                $ticket->id
-            );
         }
+// Load support agents for admin
+$agents = collect();
+
+if ($user->isAdmin()) {
+    $agents = User::where('role', 'agent')
+        ->orderBy('name')
+        ->get(['id', 'name']);
+}
+
+return view('tickets.show', compact('ticket', 'agents'));
+
+    } catch (Throwable $e) {
+
+        Log::error('Failed to load ticket details', [
+            'ticket_id' => $ticket->id,
+            'user_id' => auth()->id(),
+            'error' => $e->getMessage(),
+        ]);
+
+        return redirect()
+            ->route('tickets.index')
+            ->with('error', 'Unable to load ticket details.');
     }
+}
+
+
+
+
+
+
+
+    public function edit(Ticket $ticket): View
+    {
+        // Check user permission
+        Gate::authorize('update', $ticket);
+
+        // Load active categories and current category
+        $categories = TicketCategory::where(function ($query) use ($ticket) {
+            $query->where('is_active', true)
+                  ->orWhere('id', $ticket->category_id);
+        })
+        ->orderBy('name')
+        ->get();
+
+        return view('tickets.edit', compact('ticket', 'categories'));
+    }
+
 
     /**
      * Update ticket information.
      */
-    public function update(
-        UpdateTicketRequest $request,
-        Ticket $ticket,
-        TicketService $ticketService
-    ): JsonResponse {
+/**
+ * Update ticket information.
+ */
+public function update(
+    UpdateTicketRequest $request,
+    Ticket $ticket,
+    TicketService $ticketService
+): RedirectResponse {
 
-        try {
-            $ticket = $ticketService->updateTicket(
-                $ticket,
-                $request->user(),
-                $request->validated()
-            );
+    try {
+        $ticket = $ticketService->updateTicket(
+            $ticket,
+            $request->user(),
+            $request->validated()
+        );
 
-            return response()->json([
-                'message' => 'Ticket updated successfully.',
-                'ticket' => $ticket,
-            ]);
+        return redirect()
+            ->route('tickets.show', $ticket)
+            ->with('success', 'Ticket updated successfully.');
 
-        } catch (Throwable $e) {
+    } catch (Throwable $e) {
 
-            return $this->handleError(
-                $e,
-                'update',
-                $ticket->id
-            );
-        }
+        Log::error('Ticket update failed', [
+            'ticket_id' => $ticket->id,
+            'user_id' => $request->user()->id,
+            'error' => $e->getMessage(),
+        ]);
+
+        return back()
+            ->withInput()
+            ->with('error', 'Unable to update ticket.');
     }
+}
 
     /**
      * Resolve an active ticket.
      */
-    public function resolve(
-        Request $request,
-        Ticket $ticket,
-        TicketService $ticketService
-    ): JsonResponse {
+/**
+ * Resolve a ticket.
+ */
+public function resolve(
+    Request $request,
+    Ticket $ticket,
+    TicketService $ticketService
+): RedirectResponse {
 
-        Gate::authorize('resolve', $ticket);
+    Gate::authorize('resolve', $ticket);
 
-        try {
-            $ticket = $ticketService->resolveTicket(
-                $ticket,
-                $request->user()
-            );
+    try {
+        $ticketService->resolveTicket(
+            $ticket,
+            $request->user()
+        );
 
-            return response()->json([
-                'message' => 'Ticket resolved successfully.',
-                'ticket' => $ticket,
-            ]);
+        return redirect()
+            ->route('tickets.show', $ticket)
+            ->with('success', 'Ticket resolved successfully.');
 
-        } catch (Throwable $e) {
+    } catch (Throwable $e) {
 
-            return $this->handleError(
-                $e,
-                'resolve',
-                $ticket->id
-            );
-        }
+        Log::error('Ticket resolve failed', [
+            'ticket_id' => $ticket->id,
+            'user_id' => $request->user()->id,
+            'error' => $e->getMessage(),
+        ]);
+
+        return back()
+            ->with('error', 'Unable to resolve ticket.');
     }
-
+}
     /**
      * Close a resolved ticket.
      */
-    public function close(
-        Request $request,
-        Ticket $ticket,
-        TicketService $ticketService
-    ): JsonResponse {
+/**
+ * Close a resolved ticket.
+ */
+public function close(
+    Request $request,
+    Ticket $ticket,
+    TicketService $ticketService
+): RedirectResponse {
 
-        Gate::authorize('close', $ticket);
+    Gate::authorize('close', $ticket);
 
-        try {
-            $ticket = $ticketService->closeTicket(
-                $ticket,
-                $request->user()
-            );
+    try {
+        $ticketService->closeTicket(
+            $ticket,
+            $request->user()
+        );
 
-            return response()->json([
-                'message' => 'Ticket closed successfully.',
-                'ticket' => $ticket,
-            ]);
+        return redirect()
+            ->route('tickets.show', $ticket)
+            ->with('success', 'Ticket closed successfully.');
 
-        } catch (Throwable $e) {
+    } catch (Throwable $e) {
 
-            return $this->handleError(
-                $e,
-                'close',
-                $ticket->id
-            );
-        }
+        Log::error('Ticket close failed', [
+            'ticket_id' => $ticket->id,
+            'user_id' => $request->user()->id,
+            'error' => $e->getMessage(),
+        ]);
+
+        return back()
+            ->with('error', 'Unable to close ticket.');
     }
+}
 
     /**
      * Handle and log unexpected errors.
@@ -266,4 +332,57 @@ class TicketController extends Controller
             'message' => 'Something went wrong. Please try again.',
         ], 500);
     }
+
+
+    /**
+ * Assign a ticket manually.
+ */
+public function assign(
+    Request $request,
+    Ticket $ticket,
+    TicketService $ticketService
+): RedirectResponse {
+
+    Gate::authorize('assign', $ticket);
+
+    // Validate selected agent
+    $data = $request->validate([
+        'agent_id' => [
+            'required',
+            'integer',
+            Rule::exists('users', 'id')->where('role', 'agent'),
+        ],
+    ]);
+
+    try {
+        $ticketService->assignTicket(
+            $ticket,
+            $request->user(),
+            (int) $data['agent_id']
+        );
+
+        return redirect()
+            ->route('tickets.show', $ticket)
+            ->with('success', 'Ticket assigned successfully.');
+
+    } catch (ValidationException $e) {
+        throw $e;
+
+    } catch (Throwable $e) {
+
+        Log::error('Ticket assignment failed', [
+            'ticket_id' => $ticket->id,
+            'user_id' => $request->user()->id,
+            'error' => $e->getMessage(),
+        ]);
+
+        return back()
+            ->with('error', 'Unable to assign ticket.');
+    }
+}
+
+/**
+ * Handle and log unexpected errors.
+ */
+
 }

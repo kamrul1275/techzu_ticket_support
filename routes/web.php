@@ -41,10 +41,6 @@ Route::middleware('auth')->group(function () {
     ])->name('logout');
 });
 
-    Route::post('/logout', [
-        AuthController::class, 'logout'
-    ])->name('logout');
-
 // Ticket CRUD Routes
 Route::middleware('auth')
     ->prefix('tickets')
@@ -71,18 +67,28 @@ Route::middleware('auth')
             TicketController::class, 'show'
         ])->name('show');
 
+        Route::get('/{ticket}/edit', [
+    TicketController::class, 'edit'
+])->name('edit');
+
         // Update Ticket
         Route::patch('/{ticket}', [
             TicketController::class, 'update'
         ])->name('update');
 
-        // Resolve Ticket
-        Route::patch('/{ticket}/resolve', [
-            TicketController::class, 'resolve'
-        ])->name('resolve');
 
-        // Close Ticket
-        Route::patch('/{ticket}/close', [
-            TicketController::class, 'close'
-        ])->name('close');
+// Manual Assignment
+Route::patch('/{ticket}/assign', [
+    TicketController::class, 'assign'
+])->name('assign');
+
+// Resolve Ticket
+Route::patch('/{ticket}/resolve', [
+    TicketController::class, 'resolve'
+])->name('resolve');
+
+
+Route::patch('/{ticket}/close', [
+    TicketController::class, 'close'
+])->name('close');
     });
