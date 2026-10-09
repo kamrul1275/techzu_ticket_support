@@ -1,0 +1,471 @@
+/* ==========================================
+   SUPPORTDESK - DASHBOARD DESIGN
+========================================== */
+
+.sd-body {
+    min-height: 100vh;
+    background: #f5f9f7;
+}
+
+/* Main Container */
+
+.sd-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
+/* Navbar */
+
+.sd-navbar {
+    background: #ffffff;
+    border-bottom: 1px solid #e2eae6;
+    box-shadow: 0 2px 12px rgba(6, 78, 59, 0.03);
+}
+
+.sd-navbar-content {
+    min-height: 80px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+/* Logo */
+
+.sd-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    color: #064e3b;
+    font-size: 21px;
+    font-weight: 750;
+    text-decoration: none;
+}
+
+.sd-logo-icon {
+    width: 43px;
+    height: 43px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #059669;
+    color: white;
+
+    border-radius: 12px;
+    font-size: 23px;
+    font-weight: 800;
+}
+
+/* Navigation */
+
+.sd-nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sd-nav a {
+    padding: 11px 17px;
+
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 600;
+
+    border-radius: 9px;
+    text-decoration: none;
+
+    transition: all 0.2s ease;
+}
+
+.sd-nav a:hover,
+.sd-nav a.active {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+/* User Information */
+
+.sd-user {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.sd-user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.sd-user-name {
+    color: #172b26;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.sd-user-role {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.sd-logout {
+    margin: 0;
+    padding: 11px 18px;
+
+    background: white;
+    color: #065f46;
+
+    border: 1px solid #cde5d8;
+    border-radius: 10px;
+
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.sd-logout:hover {
+    background: #ecfdf5;
+}
+
+/* Main Content */
+
+.sd-main {
+    padding-top: 38px;
+    padding-bottom: 60px;
+}
+
+/* Welcome Banner */
+
+.sd-welcome {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+
+    padding: 38px 42px;
+    margin-bottom: 36px;
+
+    color: white;
+
+    background: linear-gradient(
+        125deg,
+        #064e3b 0%,
+        #047857 65%,
+        #059669 100%
+    );
+
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.sd-welcome-label {
+    display: inline-block;
+
+    padding: 7px 12px;
+    margin-bottom: 20px;
+
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 20px;
+
+    color: #d1fae5;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.sd-welcome h1 {
+    margin: 0 0 12px;
+
+    color: white;
+    font-size: 31px;
+    font-weight: 750;
+    letter-spacing: -0.6px;
+}
+
+.sd-welcome p {
+    max-width: 560px;
+
+    color: #d1fae5;
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+.sd-welcome-icon {
+    width: 90px;
+    height: 90px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 25px;
+
+    color: white;
+    font-size: 48px;
+}
+
+/* Section Headings */
+
+.sd-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    margin-bottom: 22px;
+}
+
+.sd-section-heading h2 {
+    margin: 0 0 8px;
+
+    color: #123e30;
+    font-size: 22px;
+    font-weight: 750;
+}
+
+.sd-section-heading p {
+    color: #64748b;
+    font-size: 14px;
+}
+
+/* Quick Action Grid */
+
+.sd-card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+
+    margin-bottom: 36px;
+}
+
+.sd-action-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    padding: 28px;
+    min-height: 230px;
+
+    background: white;
+    border: 1px solid #e2eae6;
+    border-radius: 16px;
+
+    box-shadow: 0 6px 20px rgba(6, 78, 59, 0.04);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.sd-action-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(6, 78, 59, 0.09);
+}
+
+.sd-card-icon {
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 20px;
+
+    background: #d1fae5;
+    color: #047857;
+
+    border-radius: 13px;
+
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.sd-action-card h3 {
+    margin-bottom: 10px;
+
+    color: #172b26;
+    font-size: 18px;
+}
+
+.sd-action-card p {
+    margin-bottom: 22px;
+
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.sd-card-link {
+    margin-top: auto;
+
+    color: #047857;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.sd-card-link:hover {
+    color: #065f46;
+}
+
+.sd-role-badge,
+.sd-active-badge {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 8px 13px;
+
+    background: #d1fae5;
+    color: #065f46;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.sd-role-badge {
+    margin-top: auto;
+}
+
+/* Account Card */
+
+.sd-account-card {
+    padding: 30px;
+
+    background: white;
+    border: 1px solid #e2eae6;
+    border-radius: 16px;
+
+    box-shadow: 0 6px 20px rgba(6, 78, 59, 0.04);
+}
+
+.sd-account-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 25px;
+
+    padding-top: 22px;
+    border-top: 1px solid #edf2ef;
+}
+
+.sd-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sd-info-item span {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.sd-info-item strong {
+    color: #172b26;
+    font-size: 14px;
+    font-weight: 650;
+    overflow-wrap: anywhere;
+}
+
+/* Alerts */
+
+.sd-alert-success,
+.sd-alert-error {
+    padding: 14px 18px;
+    margin-bottom: 24px;
+
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.sd-alert-success {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.sd-alert-error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+/* Tablet */
+
+@media (max-width: 900px) {
+    .sd-navbar-content {
+        flex-wrap: wrap;
+        padding-top: 16px;
+        padding-bottom: 16px;
+    }
+
+    .sd-card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sd-welcome {
+        padding: 30px;
+    }
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+    .sd-container {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .sd-nav {
+        width: 100%;
+        order: 3;
+    }
+
+    .sd-user {
+        gap: 10px;
+    }
+
+    .sd-user-info {
+        display: none;
+    }
+
+    .sd-main {
+        padding-top: 24px;
+    }
+
+    .sd-welcome {
+        padding: 28px 24px;
+    }
+
+    .sd-welcome h1 {
+        font-size: 25px;
+    }
+
+    .sd-welcome-icon {
+        display: none;
+    }
+
+    .sd-card-grid,
+    .sd-account-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sd-account-card {
+        padding: 22px;
+    }
+
+    .sd-action-card {
+        min-height: 200px;
+    }
+}

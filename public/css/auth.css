@@ -1,0 +1,863 @@
+/* ==========================================
+   SUPPORTDESK - GLOBAL THEME
+========================================== */
+
+:root {
+    /* Primary Colors */
+    --primary: #059669;
+    --primary-dark: #047857;
+    --primary-light: #10b981;
+    --primary-soft: #ecfdf5;
+
+    /* Brand Colors */
+    --brand-dark: #064e3b;
+    --brand-medium: #065f46;
+    --brand-light: #059669;
+
+    /* Text */
+    --text: #172b26;
+    --text-soft: #64748b;
+    --text-muted: #94a3b8;
+
+    /* Background */
+    --background: #f6faf8;
+    --white: #ffffff;
+
+    /* Borders */
+    --border: #dce8e2;
+
+    /* Status */
+    --danger: #dc2626;
+    --danger-bg: #fef2f2;
+    --danger-border: #fecaca;
+
+    /* Shadows */
+    --shadow-sm: 0 4px 12px rgba(6, 78, 59, 0.05);
+    --shadow-md: 0 12px 32px rgba(6, 78, 59, 0.08);
+    --shadow-lg: 0 24px 65px rgba(6, 78, 59, 0.12);
+
+    /* Radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --radius-xl: 24px;
+}
+
+
+/* ==========================================
+   RESET & BASE
+========================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    color: var(--text);
+
+    background:
+        radial-gradient(
+            circle at 5% 10%,
+            #d1fae5 0%,
+            transparent 32%
+        ),
+        radial-gradient(
+            circle at 95% 90%,
+            #ccfbf1 0%,
+            transparent 32%
+        ),
+        #f6faf8;
+
+    -webkit-font-smoothing: antialiased;
+}
+
+a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: var(--primary-dark);
+}
+
+button,
+input {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:focus-visible,
+a:focus-visible {
+    outline: 3px solid #34d399;
+    outline-offset: 3px;
+}
+
+
+/* ==========================================
+   AUTHENTICATION PAGE
+========================================== */
+
+.auth-page {
+    min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 28px;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 1120px;
+    min-height: 640px;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    background: var(--white);
+
+    border: 1px solid #e5eee9;
+    border-radius: var(--radius-xl);
+
+    overflow: hidden;
+
+    box-shadow: var(--shadow-lg);
+}
+
+
+/* ==========================================
+   LEFT BRAND PANEL
+========================================== */
+
+.auth-brand {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    padding: 52px;
+
+    color: var(--white);
+
+    background: linear-gradient(
+        145deg,
+        #064e3b 0%,
+        #047857 55%,
+        #059669 100%
+    );
+
+    overflow: hidden;
+    isolation: isolate;
+}
+
+/* Decorative Circle - Top */
+
+.auth-brand::before {
+    content: "";
+
+    position: absolute;
+
+    width: 300px;
+    height: 300px;
+
+    top: -120px;
+    right: -100px;
+
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.07);
+
+    z-index: -1;
+}
+
+/* Decorative Circle - Bottom */
+
+.auth-brand::after {
+    content: "";
+
+    position: absolute;
+
+    width: 280px;
+    height: 280px;
+
+    left: -120px;
+    bottom: -130px;
+
+    border-radius: 50%;
+
+    background: rgba(167, 243, 208, 0.10);
+
+    z-index: -1;
+}
+
+
+/* ==========================================
+   BRAND LOGO
+========================================== */
+
+.brand-logo {
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    font-size: 22px;
+    font-weight: 750;
+
+    letter-spacing: -0.5px;
+}
+
+.logo-icon {
+    width: 50px;
+    height: 50px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 14px;
+
+    background: #d1fae5;
+    color: #065f46;
+
+    font-size: 26px;
+    font-weight: 800;
+
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.10);
+}
+
+
+/* ==========================================
+   BRAND CONTENT
+========================================== */
+
+.brand-content {
+    max-width: 430px;
+}
+
+.brand-tag {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 9px 15px;
+    margin-bottom: 25px;
+
+    border-radius: 30px;
+
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.20);
+
+    color: #ecfdf5;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.brand-content h1 {
+    font-size: clamp(36px, 4vw, 48px);
+    font-weight: 800;
+
+    line-height: 1.15;
+    letter-spacing: -1.5px;
+
+    margin-bottom: 22px;
+}
+
+.brand-content p {
+    max-width: 390px;
+
+    color: #d1fae5;
+
+    font-size: 16px;
+    line-height: 1.9;
+}
+
+
+/* ==========================================
+   BRAND FEATURES
+========================================== */
+
+.brand-points {
+    display: flex;
+    flex-direction: column;
+
+    gap: 15px;
+
+    margin-top: 32px;
+}
+
+.brand-point {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    color: #ecfdf5;
+
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.brand-point-dot {
+    width: 9px;
+    height: 9px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    background: #a7f3d0;
+
+    box-shadow: 0 0 0 4px rgba(167, 243, 208, 0.12);
+}
+
+.brand-footer {
+    color: #d1fae5;
+
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+
+/* ==========================================
+   RIGHT FORM PANEL
+========================================== */
+
+.auth-form-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    padding: 55px 54px;
+
+    background: var(--white);
+}
+
+
+/* ==========================================
+   FORM HEADING
+========================================== */
+
+.form-heading {
+    margin-bottom: 32px;
+}
+
+.form-heading h2 {
+    color: #102820;
+
+    font-size: 36px;
+    font-weight: 800;
+
+    line-height: 1.2;
+    letter-spacing: -1px;
+
+    margin-bottom: 12px;
+}
+
+.form-heading p {
+    color: var(--text-soft);
+
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.form-card {
+    width: 100%;
+}
+
+
+/* ==========================================
+   FORM INPUTS
+========================================== */
+
+.form-group {
+    margin-bottom: 22px;
+}
+
+.form-label {
+    display: block;
+
+    margin-bottom: 9px;
+
+    color: #253d34;
+
+    font-size: 14px;
+    font-weight: 650;
+}
+
+.form-control {
+    display: block;
+
+    width: 100%;
+    height: 52px;
+
+    padding: 0 16px;
+
+    color: var(--text);
+    background: #ffffff;
+
+    font-size: 15px;
+
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+.form-control::placeholder {
+    color: var(--text-muted);
+}
+
+.form-control:hover {
+    border-color: #a7d7bf;
+}
+
+.form-control:focus {
+    background: #ffffff;
+
+    border-color: var(--primary);
+
+    box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.12);
+}
+
+
+/* ==========================================
+   FORM ERRORS
+========================================== */
+
+.form-control.is-invalid {
+    border-color: var(--danger);
+}
+
+.form-control.is-invalid:focus {
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.10);
+}
+
+.error-text {
+    display: block;
+
+    margin-top: 7px;
+
+    color: var(--danger);
+
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.alert-error {
+    padding: 14px 16px;
+    margin-bottom: 22px;
+
+    color: #991b1b;
+    background: var(--danger-bg);
+
+    border: 1px solid var(--danger-border);
+    border-radius: var(--radius-md);
+
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+
+/* ==========================================
+   PRIMARY BUTTON
+========================================== */
+
+.btn-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    min-height: 52px;
+
+    margin-top: 10px;
+    padding: 12px 20px;
+
+    color: #ffffff;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    border: none;
+    border-radius: var(--radius-md);
+
+    background: linear-gradient(
+        135deg,
+        #059669 0%,
+        #047857 100%
+    );
+
+    box-shadow: 0 8px 20px rgba(5, 150, 105, 0.20);
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+
+    background: linear-gradient(
+        135deg,
+        #047857 0%,
+        #065f46 100%
+    );
+
+    box-shadow: 0 12px 24px rgba(5, 150, 105, 0.25);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+
+/* ==========================================
+   BOTTOM TEXT
+========================================== */
+
+.form-bottom {
+    margin-top: 28px;
+
+    color: var(--text-soft);
+
+    text-align: center;
+
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.form-bottom a {
+    margin-left: 4px;
+
+    color: var(--primary-dark);
+    font-weight: 650;
+}
+
+.form-bottom a:hover {
+    text-decoration: underline;
+}
+
+
+/* ==========================================
+   DASHBOARD
+========================================== */
+
+.dashboard-page {
+    min-height: 100vh;
+
+    padding: 40px 24px;
+}
+
+.dashboard-container {
+    max-width: 1180px;
+    margin: 0 auto;
+}
+
+.dashboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 24px;
+
+    margin-bottom: 32px;
+}
+
+.dashboard-heading h1 {
+    color: var(--brand-dark);
+
+    font-size: 32px;
+    font-weight: 750;
+
+    letter-spacing: -0.8px;
+
+    margin-bottom: 10px;
+}
+
+.dashboard-heading p {
+    color: var(--text-soft);
+
+    font-size: 15px;
+}
+
+.dashboard-card {
+    padding: 32px;
+
+    background: var(--white);
+
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+
+    box-shadow: var(--shadow-md);
+}
+
+.dashboard-card h2 {
+    color: var(--brand-dark);
+
+    font-size: 22px;
+
+    margin-bottom: 20px;
+}
+
+.dashboard-card p {
+    margin-bottom: 14px;
+
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.dashboard-card p:last-child {
+    margin-bottom: 0;
+}
+
+
+/* ==========================================
+   ROLE BADGE
+========================================== */
+
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 7px 13px;
+
+    color: #065f46;
+    background: #d1fae5;
+
+    border: 1px solid #a7f3d0;
+    border-radius: 30px;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+/* ==========================================
+   LOGOUT BUTTON
+========================================== */
+
+.btn-logout {
+    padding: 12px 22px;
+
+    background: #ffffff;
+    color: var(--brand-dark);
+
+    border: 1px solid #b7d9c9;
+    border-radius: var(--radius-md);
+
+    font-size: 14px;
+    font-weight: 600;
+
+    box-shadow: var(--shadow-sm);
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.btn-logout:hover {
+    background: var(--primary-soft);
+    transform: translateY(-1px);
+}
+
+
+/* ==========================================
+   TABLET RESPONSIVE
+========================================== */
+
+@media (max-width: 992px) {
+
+    .auth-container {
+        max-width: 640px;
+
+        grid-template-columns: 1fr;
+
+        min-height: auto;
+    }
+
+    .auth-brand {
+        min-height: 310px;
+        padding: 36px;
+    }
+
+    .brand-content {
+        margin: 35px 0;
+    }
+
+    .brand-content h1 {
+        font-size: 36px;
+    }
+
+    .brand-content p {
+        font-size: 15px;
+    }
+
+    .auth-form-panel {
+        padding: 42px 40px;
+    }
+
+    .form-heading h2 {
+        font-size: 32px;
+    }
+}
+
+
+/* ==========================================
+   MOBILE RESPONSIVE
+========================================== */
+
+@media (max-width: 576px) {
+
+    .auth-page {
+        padding: 12px;
+        align-items: flex-start;
+    }
+
+    .auth-container {
+        border-radius: 18px;
+    }
+
+    .auth-brand {
+        min-height: auto;
+        padding: 28px 24px;
+    }
+
+    .brand-logo {
+        font-size: 19px;
+    }
+
+    .logo-icon {
+        width: 44px;
+        height: 44px;
+
+        font-size: 22px;
+    }
+
+    .brand-content {
+        margin: 28px 0 0;
+    }
+
+    .brand-tag {
+        margin-bottom: 18px;
+        padding: 7px 12px;
+
+        font-size: 11px;
+    }
+
+    .brand-content h1 {
+        font-size: 30px;
+        letter-spacing: -1px;
+    }
+
+    .brand-content p {
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    .brand-points {
+        margin-top: 22px;
+        gap: 10px;
+    }
+
+    .brand-point {
+        font-size: 12px;
+    }
+
+    .brand-footer {
+        margin-top: 28px;
+        font-size: 11px;
+    }
+
+    .auth-form-panel {
+        padding: 34px 24px;
+    }
+
+    .form-heading {
+        margin-bottom: 26px;
+    }
+
+    .form-heading h2 {
+        font-size: 28px;
+    }
+
+    .form-heading p {
+        font-size: 14px;
+    }
+
+    .form-control {
+        height: 48px;
+    }
+
+    .btn-primary {
+        min-height: 50px;
+    }
+
+    .dashboard-page {
+        padding: 24px 14px;
+    }
+
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .dashboard-heading h1 {
+        font-size: 26px;
+    }
+
+    .dashboard-card {
+        padding: 24px 20px;
+    }
+}
+
+
+/* ==========================================
+   REDUCED MOTION ACCESSIBILITY
+========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}
