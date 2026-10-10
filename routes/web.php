@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Ticket\TicketAttachmentController;
 use App\Http\Controllers\Ticket\TicketController;
+use App\Http\Controllers\Ticket\TicketMessageController;
 use Illuminate\Support\Facades\Route;
 
 // Default route
@@ -129,4 +131,20 @@ Route::patch('/{ticket}/resolve', [
 Route::patch('/{ticket}/close', [
     TicketController::class, 'close'
 ])->name('close');
+
+Route::post('/{ticket}/messages', [
+    TicketMessageController::class, 'store'
+])->whereNumber('ticket')->name('messages.store');
+
+// Secure Attachment Download
+Route::get('/{ticket}/attachments/{attachment}/download', [
+    TicketAttachmentController::class, 'download'
+])
+    ->whereNumber('ticket')
+    ->whereNumber('attachment')
+    ->name('attachments.download');
     });
+
+
+
+

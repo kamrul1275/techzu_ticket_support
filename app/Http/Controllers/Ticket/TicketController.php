@@ -165,7 +165,29 @@ if ($user->isAdmin()) {
         ->get(['id', 'name']);
 }
 
-return view('tickets.show', compact('ticket', 'agents'));
+// Load ticket conversation with pagination
+$messages = $ticket->messages()
+    ->with([
+        'user:id,name',
+        'attachments:id,ticket_message_id,original_name,size_bytes',
+    ])
+    // Never load internal notes for customers
+    ->when(
+        $user->isCustomer(),
+        fn ($query) => $query->where('is_internal', false)
+    )
+    ->orderBy('created_at')
+    ->orderBy('id')
+    ->paginate(15, ['*'], 'messages_page');
+
+// Calculate current SLA status
+$slaStatus = app(\App\Services\TicketSlaService::class)
+    ->status($ticket);
+
+return view(
+    'tickets.show',
+    compact('ticket', 'agents', 'messages', 'slaStatus')
+);
 
     } catch (Throwable $e) {
 

@@ -338,18 +338,48 @@
                 </strong>
             </div>
 
-            {{-- SLA Deadline --}}
-            <div class="detail-info">
-                <span>SLA Deadline</span>
+{{-- SLA Deadline --}}
+<div class="detail-info">
 
-                <strong>
-                    @if($ticket->sla_due_at)
-                        {{ $ticket->sla_due_at->format('d M Y, h:i A') }}
-                    @else
-                        Not calculated yet
-                    @endif
-                </strong>
-            </div>
+    <span>SLA Deadline</span>
+
+    <strong>
+        @if($ticket->sla_due_at)
+
+            {{ $ticket->sla_due_at
+                ->copy()
+                ->timezone(config('supportdesk.timezone'))
+                ->format('d M Y, h:i A') }}
+
+        @else
+            Not calculated yet
+        @endif
+    </strong>
+
+</div>
+
+{{-- SLA Status --}}
+<div class="detail-info">
+
+    <span>SLA Status</span>
+
+    @php
+        $slaLabels = [
+            'not_set' => 'Not Calculated',
+            'within' => 'Within SLA',
+            'approaching' => 'Approaching Breach',
+            'breached' => 'SLA Breached',
+            'met' => 'SLA Met',
+        ];
+    @endphp
+
+    <div>
+        <span class="sla-status sla-status-{{ $slaStatus }}">
+            {{ $slaLabels[$slaStatus] ?? 'Unknown' }}
+        </span>
+    </div>
+
+</div>
 
             {{-- Resolved Date --}}
             <div class="detail-info">
@@ -374,9 +404,256 @@
     </div>
 
 
-    {{-- ======================================
-        ACTIVITY HISTORY (ADMIN / AGENT)
-    ====================================== --}}
+
+
+
+
+
+
+
+    
+{{-- ======================================
+    TICKET CONVERSATION
+====================================== --}}
+<div class="content-card ticket-conversation-card">
+
+    <div class="card-heading">
+        <div>
+            <h2>Ticket Conversation</h2>
+            <p>Replies and conversation history.</p>
+        </div>
+
+        <span class="conversation-count">
+            {{ $messages->total() }} Messages
+        </span>
+    </div>
+
+    {{-- Message List --}}
+    <div class="conversation-list">
+
+        @forelse($messages as $message)
+
+            <div class="conversation-message
+                {{ $message->is_internal ? 'conversation-internal' : '' }}
+                {{ $message->user_id === auth()->id() ? 'conversation-own' : '' }}">
+
+                <div class="conversation-message-header">
+
+                    <div class="conversation-author">
+                        <strong>
+                            {{ $message->user?->name ?? 'Unknown User' }}
+                        </strong>
+
+                        @if($message->is_internal)
+                            <span class="conversation-internal-badge">
+                                Internal Note
+                            </span>
+                        @elseif($message->user?->isAgent())
+                            <span class="conversation-agent-badge">
+                                Support Agent
+                            </span>
+                        @elseif($message->user?->isAdmin())
+                            <span class="conversation-agent-badge">
+                                Admin
+                            </span>
+                        @else
+                            <span class="conversation-customer-badge">
+                                Customer
+                            </span>
+                        @endif
+                    </div>
+
+                    <small>
+                        {{ $message->created_at->format('d M Y, h:i A') }}
+                    </small>
+
+                </div>
+
+                {{-- Message Body --}}
+                <div class="conversation-message-body">{{ $message->body }}</div>
+
+                {{-- Attachments --}}
+                @if($message->attachments->isNotEmpty())
+
+                    <div class="conversation-attachments">
+
+                        @foreach($message->attachments as $attachment)
+
+                            <a href="{{ route('tickets.attachments.download', [$ticket, $attachment]) }}"
+                               class="conversation-file">
+
+                                <span>📎</span>
+
+                                <span>
+                                    {{ $attachment->original_name }}
+                                </span>
+
+                                <small>
+                                    {{ number_format($attachment->size_bytes / 1024, 1) }} KB
+                                </small>
+
+                            </a>
+
+                        @endforeach
+
+                    </div>
+
+                @endif
+
+            </div>
+
+        @empty
+
+            <div class="conversation-empty">
+                <h3>No Messages Yet</h3>
+                <p>Start the conversation by sending a reply.</p>
+            </div>
+
+        @endforelse
+
+    </div>
+
+    {{-- Pagination --}}
+    @if($messages->hasPages())
+        <div class="mt-3">
+            {{ $messages->links('pagination::bootstrap-5') }}
+        </div>
+    @endif
+
+    {{-- Reply / Internal Note Form --}}
+    @canany(['reply', 'addInternalNote'], $ticket)
+
+        <div class="conversation-compose">
+
+            <h3>Write a Message</h3>
+
+            <form method="POST"
+                  action="{{ route('tickets.messages.store', $ticket) }}"
+                  enctype="multipart/form-data">
+
+                @csrf
+
+                {{-- Message Type --}}
+                <div class="mb-3">
+
+                    <label for="message_type" class="form-label">
+                        Message Type
+                    </label>
+
+                    <select name="type"
+                            id="message_type"
+                            class="form-select form-select-sm @error('type') is-invalid @enderror"
+                            required>
+
+                        @can('reply', $ticket)
+                            <option value="reply"
+                                @selected(old('type', 'reply') === 'reply')>
+                                Public Reply
+                            </option>
+                        @endcan
+
+                        @can('addInternalNote', $ticket)
+                            <option value="note"
+                                @selected(old('type') === 'note')>
+                                Internal Note (Staff Only)
+                            </option>
+                        @endcan
+
+                    </select>
+
+                    @error('type')
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+                    @enderror
+
+                </div>
+
+                {{-- Message Body --}}
+                <div class="mb-3">
+
+                    <label for="message_body" class="form-label">
+                        Your Message <span class="text-danger">*</span>
+                    </label>
+
+                    <textarea
+                        name="body"
+                        id="message_body"
+                        rows="4"
+                        maxlength="5000"
+                        required
+                        placeholder="Write your reply..."
+                        class="form-control @error('body') is-invalid @enderror"
+                    >{{ old('body') }}</textarea>
+
+                    @error('body')
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+                    @enderror
+
+                </div>
+
+                {{-- Attachment Input --}}
+                <div class="mb-3">
+
+                    <label for="message_files" class="form-label">
+                        Attachments (Optional)
+                    </label>
+
+                    <input
+                        type="file"
+                        id="message_files"
+                        name="attachments[]"
+                        class="form-control form-control-sm"
+                        accept=".jpg,.jpeg,.png,.pdf,.txt"
+                        multiple
+                    >
+
+                    <small class="text-muted">
+                        Maximum 3 files, 5 MB each.
+                        Allowed: JPG, PNG, PDF, TXT.
+                    </small>
+
+                    @if($errors->has('attachments') || $errors->has('attachments.*'))
+                        <div class="text-danger small mt-2">
+                            {{ $errors->first('attachments')
+                               ?: $errors->first('attachments.*') }}
+                        </div>
+                    @endif
+
+                </div>
+
+                {{-- Actions --}}
+                <div class="conversation-form-actions">
+
+                    <span class="conversation-security-note">
+                        Internal notes are visible to support staff only.
+                    </span>
+
+                    <button type="submit" class="conversation-send-btn">
+                        Send Message
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    @else
+
+        <div class="conversation-readonly">
+            This ticket is completed. New replies are disabled.
+        </div>
+
+    @endcanany
+
+</div>
+
+
+
+
 {{-- ======================================
     ASSIGNMENT HISTORY (ADMIN / AGENT)
 ====================================== --}}

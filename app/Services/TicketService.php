@@ -31,17 +31,27 @@ class TicketService
             $ticket->id
         );
 
-        $ticket->save();
 
-            // 3. Save activity history
-            $ticket->activities()->create([
-                'user_id' => $user->id,
-                'action' => 'created',
-                'new_values' => [
-                    'status' => $ticket->status,
-                    'priority' => $ticket->priority,
-                ],
-            ]);
+$ticket->save();
+
+// Calculate SLA deadline from ticket creation time.
+$ticket->sla_due_at = app(TicketSlaService::class)->deadline(
+    $ticket->priority,
+    $ticket->created_at
+);
+
+$ticket->save();
+
+// Save activity history
+$ticket->activities()->create([
+    'user_id' => $user->id,
+    'action' => 'created',
+    'new_values' => [
+        'status' => $ticket->status,
+        'priority' => $ticket->priority,
+        'sla_due_at' => $ticket->sla_due_at->toDateTimeString(),
+    ],
+]);
 
             return $ticket->load('category');
         });
@@ -58,21 +68,35 @@ class TicketService
 
         return DB::transaction(function () use ($ticket, $user, $data) {
 
-            // 1. Remember previous values
-            $oldValues = $ticket->only(array_keys($data));
+// Remember previous values
+$oldValues = $ticket->only(array_keys($data));
 
-            // 2. Set validated fields
-            $ticket->fill($data);
+$previousDeadline = $ticket->sla_due_at?->toDateTimeString();
 
-            // 3. Find which fields actually changed
-            $changes = $ticket->getDirty();
+// Set validated fields
+$ticket->fill($data);
 
-            if (empty($changes)) {
-                return $ticket;
-            }
+$changes = $ticket->getDirty();
 
-            // 4. Save updated ticket
-            $ticket->save();
+if (empty($changes)) {
+    return $ticket;
+}
+
+// Recalculate SLA only when priority changes
+if (array_key_exists('priority', $changes)) {
+
+    $oldValues['sla_due_at'] = $previousDeadline;
+
+    $ticket->sla_due_at = app(TicketSlaService::class)->deadline(
+        $ticket->priority,
+        $ticket->created_at
+    );
+
+    $changes = $ticket->getDirty();
+}
+
+// Save updated ticket
+$ticket->save();
 
             // 5. Save activity history
             $ticket->activities()->create([
@@ -175,12 +199,19 @@ class TicketService
         int $agentId
     ): Ticket {
 
-        return DB::transaction(function () use ($ticket, $admin, $agentId) {
+return DB::transaction(function () use ($ticket, $admin, $agentId) {
 
-            // Lock ticket to prevent simultaneous changes
-            $ticket = Ticket::whereKey($ticket->id)
-                ->lockForUpdate()
-                ->firstOrFail();
+    // Only administrators can manually assign tickets
+    if (!$admin->isAdmin()) {
+        throw ValidationException::withMessages([
+            'agent_id' => 'Only admins can assign tickets.',
+        ]);
+    }
+
+    // Lock ticket to prevent simultaneous changes
+    $ticket = Ticket::whereKey($ticket->id)
+        ->lockForUpdate()
+        ->firstOrFail();
 
             // Do not assign completed tickets
             if (in_array($ticket->status, ['resolved', 'closed'], true)) {
@@ -237,12 +268,19 @@ if (
         User $agent
     ): Ticket {
 
-        return DB::transaction(function () use ($ticket, $agent) {
+return DB::transaction(function () use ($ticket, $agent) {
 
-            // 1. Lock the latest ticket row
-            $ticket = Ticket::whereKey($ticket->id)
-                ->lockForUpdate()
-                ->firstOrFail();
+    // Only support agents can accept tickets
+    if (!$agent->isAgent()) {
+        throw ValidationException::withMessages([
+            'ticket' => 'Only support agents can accept tickets.',
+        ]);
+    }
+
+    // Lock the latest ticket row
+    $ticket = Ticket::whereKey($ticket->id)
+        ->lockForUpdate()
+        ->firstOrFail();
 
             // 2. Make sure ticket is still available
             if (
