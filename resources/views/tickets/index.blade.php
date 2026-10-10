@@ -5,6 +5,20 @@
 
 @section('content')
 
+    {{-- Available Tickets Shortcut for Agents --}}
+    @if(auth()->user()->isAgent())
+
+        <div class="d-flex justify-content-end mb-3">
+
+            <a href="{{ route('tickets.available') }}"
+               class="btn btn-success btn-sm">
+                Available Tickets
+            </a>
+
+        </div>
+
+    @endif
+
     {{-- Page Header --}}
     <div class="page-header">
 

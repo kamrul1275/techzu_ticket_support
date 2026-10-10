@@ -62,10 +62,35 @@ Route::middleware('auth')
             TicketController::class, 'store'
         ])->name('store');
 
+
+
+        // Available Tickets for Agents
+Route::get('/available', [
+    TicketController::class, 'available'
+])->name('available');
+
+
         // Show Ticket Details
         Route::get('/{ticket}', [
             TicketController::class, 'show'
         ])->name('show');
+
+
+
+// // Available Tickets for Agents
+// Route::get('/available', [
+//     TicketController::class, 'available'
+// ])->name('available');
+
+
+
+
+// Show Ticket Details
+Route::get('/{ticket}', [
+    TicketController::class, 'show'
+])->name('show');
+
+
 
         Route::get('/{ticket}/edit', [
     TicketController::class, 'edit'
@@ -82,13 +107,20 @@ Route::patch('/{ticket}/assign', [
     TicketController::class, 'assign'
 ])->name('assign');
 
+
+// Agent Accept Ticket
+Route::patch('/{ticket}/accept', [
+    TicketController::class, 'accept'
+])->name('accept');
+
+
 // Resolve Ticket
 Route::patch('/{ticket}/resolve', [
     TicketController::class, 'resolve'
 ])->name('resolve');
 
 
-// Route::patch('/{ticket}/close', [
-//     TicketController::class, 'close'
-// ])->name('close');
+Route::patch('/{ticket}/close', [
+    TicketController::class, 'close'
+])->name('close');
     });

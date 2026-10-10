@@ -382,7 +382,75 @@ public function assign(
 }
 
 /**
- * Handle and log unexpected errors.
+ * Show available unassigned tickets to agents.
  */
+public function available(Request $request): View|RedirectResponse
+{
+    // Only agents can access this page
+    abort_unless($request->user()->isAgent(), 403);
 
+    try {
+        $tickets = Ticket::with([
+                'customer:id,name',
+                'category:id,name',
+            ])
+            ->where('status', 'open')
+            ->whereNull('assigned_agent_id')
+            ->latest()
+            ->paginate(10);
+
+        return view('tickets.available', compact('tickets'));
+
+    } catch (Throwable $e) {
+
+        Log::error('Failed to load available tickets', [
+            'user_id' => $request->user()->id,
+            'error' => $e->getMessage(),
+        ]);
+
+        return redirect()
+            ->route('tickets.index')
+            ->with('error', 'Unable to load available tickets.');
+    }
+}
+
+/**
+ * Accept an available ticket.
+ */
+public function accept(
+    Request $request,
+    Ticket $ticket,
+    TicketService $ticketService
+): RedirectResponse {
+
+    // Agent permission and ticket availability
+    Gate::authorize('accept', $ticket);
+
+    try {
+        $ticketService->acceptTicket(
+            $ticket,
+            $request->user()
+        );
+
+        return redirect()
+            ->route('tickets.show', $ticket)
+            ->with('success', 'Ticket accepted successfully.');
+
+    } catch (ValidationException $e) {
+
+        // Show validation error instead of server error
+        throw $e;
+
+    } catch (Throwable $e) {
+
+        Log::error('Ticket acceptance failed', [
+            'ticket_id' => $ticket->id,
+            'user_id' => $request->user()->id,
+            'error' => $e->getMessage(),
+        ]);
+
+        return back()
+            ->with('error', 'Unable to accept ticket.');
+    }
+}
 }

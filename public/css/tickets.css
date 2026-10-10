@@ -1366,3 +1366,108 @@
         justify-content: flex-start;
     }
 }
+
+
+
+
+
+/* ======================================
+   AVAILABLE TICKETS PAGE
+====================================== */
+
+.sd-main .available-ticket-card {
+    padding: 26px 30px;
+}
+
+.sd-main .available-count {
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: #ecfdf5;
+    color: #047857;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.sd-main .available-ticket-table {
+    width: 100%;
+    font-size: 12px;
+}
+
+.sd-main .available-ticket-table thead th {
+    background: #f3f8f5;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 15px 14px;
+    border-bottom: 1px solid #dfe9e3;
+    white-space: nowrap;
+}
+
+.sd-main .available-ticket-table tbody td {
+    padding: 18px 14px;
+    color: #334155;
+    border-color: #edf2ef;
+    vertical-align: middle;
+}
+
+.sd-main .available-ticket-number {
+    color: #059669;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.sd-main .available-subject {
+    font-size: 12px;
+    font-weight: 600;
+    color: #183b30;
+}
+
+.sd-main .available-customer {
+    display: block;
+    margin-top: 5px;
+    color: #94a3b8;
+    font-size: 11px;
+}
+
+.sd-main .available-accept-btn {
+    padding: 9px 15px;
+    border: 1px solid #059669;
+    border-radius: 7px;
+    background: #059669;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.sd-main .available-accept-btn:hover {
+    background: #047857;
+}
+
+.sd-main .available-ticket-table form {
+    margin: 0;
+}
+
+.sd-main .available-empty h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #183b30;
+}
+
+.sd-main .available-empty p {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.sd-main .available-pagination {
+    margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+    .sd-main .available-ticket-card {
+        padding: 18px;
+    }
+}

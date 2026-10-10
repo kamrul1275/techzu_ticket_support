@@ -19,16 +19,19 @@ class TicketService
             // 1. Create ticket for the authenticated customer
             $ticket = $user->createdTickets()->create($data);
 
-            // 2. Generate unique ticket number using database ID
-            $year = now('Asia/Dhaka')->year;
+          
+        // 2. Set initial status and generate ticket number
+        $year = now('Asia/Dhaka')->year;
 
-            $ticket->ticket_number = sprintf(
-                'TKT-%d-%06d',
-                $year,
-                $ticket->id
-            );
+        $ticket->status = 'open';
 
-            $ticket->save();
+        $ticket->ticket_number = sprintf(
+            'TKT-%d-%06d',
+            $year,
+            $ticket->id
+        );
+
+        $ticket->save();
 
             // 3. Save activity history
             $ticket->activities()->create([
@@ -190,10 +193,13 @@ class TicketService
             $agent = User::where('role', 'agent')
                 ->findOrFail($agentId);
 
-            // Avoid duplicate assignment history
-            if ($ticket->assigned_agent_id === $agent->id) {
-                return $ticket;
-            }
+// Avoid duplicate assignment history
+if (
+    $ticket->assigned_agent_id !== null &&
+    (int) $ticket->assigned_agent_id === (int) $agent->id
+) {
+    return $ticket;
+}
 
             $previousAgentId = $ticket->assigned_agent_id;
 
@@ -223,4 +229,57 @@ class TicketService
             return $ticket;
         });
     }
+  /**
+     * Allow an agent to accept an unassigned ticket.
+     */
+    public function acceptTicket(
+        Ticket $ticket,
+        User $agent
+    ): Ticket {
+
+        return DB::transaction(function () use ($ticket, $agent) {
+
+            // 1. Lock the latest ticket row
+            $ticket = Ticket::whereKey($ticket->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            // 2. Make sure ticket is still available
+            if (
+                $ticket->status !== 'open' ||
+                $ticket->assigned_agent_id !== null
+            ) {
+                throw ValidationException::withMessages([
+                    'ticket' => 'This ticket is no longer available.',
+                ]);
+            }
+
+            // 3. Assign ticket to current agent
+            $ticket->assigned_agent_id = $agent->id;
+            $ticket->save();
+
+            // 4. Save assignment history
+            $ticket->assignments()->create([
+                'agent_id' => $agent->id,
+                'assigned_by' => $agent->id,
+                'method' => 'manual',
+            ]);
+
+            // 5. Save activity history
+            $ticket->activities()->create([
+                'user_id' => $agent->id,
+                'action' => 'accepted',
+                'old_values' => [
+                    'assigned_agent_id' => null,
+                ],
+                'new_values' => [
+                    'assigned_agent_id' => $agent->id,
+                ],
+            ]);
+
+            return $ticket;
+        });
+    }
 }
+
+
