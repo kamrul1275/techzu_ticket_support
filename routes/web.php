@@ -108,6 +108,12 @@ Route::patch('/{ticket}/assign', [
 ])->name('assign');
 
 
+// Automatic Assignment
+Route::patch('/{ticket}/auto-assign', [
+    TicketController::class, 'autoAssign'
+])->name('auto-assign');
+
+
 // Agent Accept Ticket
 Route::patch('/{ticket}/accept', [
     TicketController::class, 'accept'

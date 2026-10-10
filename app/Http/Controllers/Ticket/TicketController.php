@@ -146,14 +146,16 @@ public function show(Ticket $ticket): View|RedirectResponse
             'category:id,name',
         ]);
 
-        // Show audit history to authorized staff only
-        $user = auth()->user();
+// Load activity and assignment history for staff
+$user = auth()->user();
 
-        if ($user->isAdmin() || $user->isAgent()) {
-            $ticket->load([
-                'activities.user:id,name',
-            ]);
-        }
+if ($user->isAdmin() || $user->isAgent()) {
+    $ticket->load([
+        'activities.user:id,name',
+        'assignments.agent:id,name',
+        'assignments.assignedBy:id,name',
+    ]);
+}
 // Load support agents for admin
 $agents = collect();
 
@@ -451,6 +453,54 @@ public function accept(
 
         return back()
             ->with('error', 'Unable to accept ticket.');
+    }
+}
+
+
+
+
+
+/**
+ * Automatically assign a ticket to the least busy agent.
+ */
+public function autoAssign(
+    Request $request,
+    Ticket $ticket,
+    TicketService $ticketService
+): RedirectResponse {
+
+    // Check admin assignment permission
+    Gate::authorize('assign', $ticket);
+
+    try {
+
+        $ticket = $ticketService->autoAssignTicket(
+            $ticket,
+            $request->user()
+        );
+
+        return redirect()
+            ->route('tickets.show', $ticket)
+            ->with(
+                'success',
+                'Ticket automatically assigned to '
+                . $ticket->assignedAgent->name . '.'
+            );
+
+    } catch (ValidationException $e) {
+
+        throw $e;
+
+    } catch (Throwable $e) {
+
+        Log::error('Automatic ticket assignment failed', [
+            'ticket_id' => $ticket->id,
+            'user_id' => $request->user()->id,
+            'error' => $e->getMessage(),
+        ]);
+
+        return back()
+            ->with('error', 'Unable to automatically assign ticket.');
     }
 }
 }

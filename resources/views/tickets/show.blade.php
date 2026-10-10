@@ -221,6 +221,60 @@
 
             </form>
 
+
+            {{-- Automatic Assignment --}}
+            @if(is_null($ticket->assigned_agent_id))
+
+                <div class="mt-3 pt-3 border-top">
+
+                    <div class="d-flex flex-wrap
+                                align-items-center
+                                justify-content-between
+                                gap-3">
+
+                        <div>
+                            <strong class="d-block small">
+                                Automatic Assignment
+                            </strong>
+
+                            <small class="text-muted">
+                                Assign this ticket to the agent
+                                with the fewest active tickets.
+                            </small>
+                        </div>
+
+                        <form
+                            method="POST"
+                            action="{{ route('tickets.auto-assign', $ticket) }}"
+                            class="js-confirm-ticket"
+                            data-title="Auto Assign Ticket?"
+                            data-message="The system will select the agent with the lowest workload."
+                        >
+                            @csrf
+                            @method('PATCH')
+
+                            <button
+                                type="submit"
+                                class="btn btn-outline-success btn-sm"
+                                @disabled($agents->isEmpty())
+                            >
+                                Auto Assign
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                    @error('auto_assign')
+                        <div class="alert alert-warning mt-3 mb-0">
+                            {{ $message }}
+                        </div>
+                    @enderror
+
+                </div>
+
+            @endif
+
             {{-- Current Assignment --}}
             @if($ticket->assignedAgent)
 
@@ -323,49 +377,86 @@
     {{-- ======================================
         ACTIVITY HISTORY (ADMIN / AGENT)
     ====================================== --}}
-    @if(auth()->user()->isAdmin() || auth()->user()->isAgent())
+{{-- ======================================
+    ASSIGNMENT HISTORY (ADMIN / AGENT)
+====================================== --}}
+@if(auth()->user()->isAdmin() || auth()->user()->isAgent())
 
-        <div class="content-card ticket-history-card">
+    <div class="content-card ticket-history-card">
 
-            <div class="card-heading">
-                <h2>Activity History</h2>
-            </div>
+        <div class="card-heading">
+            <h2>Assignment History</h2>
+        </div>
 
-            @forelse($ticket->activities->sortByDesc('created_at') as $activity)
+        @forelse($ticket->assignments->sortByDesc('id') as $assignment)
 
-                <div class="detail-activity">
+            @php
+                if ($assignment->method === 'auto') {
+                    $assignmentType = 'Automatic Assignment';
+                    $assignmentBadge = 'bg-success';
+                } elseif (
+                    (int) $assignment->assigned_by ===
+                    (int) $assignment->agent_id
+                ) {
+                    $assignmentType = 'Agent Accepted';
+                    $assignmentBadge = 'bg-info text-dark';
+                } else {
+                    $assignmentType = 'Manual Assignment';
+                    $assignmentBadge = 'bg-secondary';
+                }
+            @endphp
 
-                    <span class="detail-activity-dot"></span>
+            <div class="detail-activity">
 
-                    <div>
+                <span class="detail-activity-dot"></span>
 
-                        <strong>
-                            {{ ucwords(str_replace('_', ' ', $activity->action)) }}
-                        </strong>
+                <div class="w-100">
 
-                        <p>
-                            By {{ $activity->user?->name ?? 'System' }}
-                        </p>
+                    <div class="d-flex flex-wrap
+                                align-items-center gap-2 mb-2">
 
-                        <small>
-                            {{ $activity->created_at->format('d M Y, h:i A') }}
-                        </small>
+                        <strong>{{ $assignmentType }}</strong>
+
+                        <span class="badge {{ $assignmentBadge }}">
+                            {{ ucfirst($assignment->method) }}
+                        </span>
 
                     </div>
 
+                    <p>
+                        Assigned to:
+                        <strong>
+                            {{ $assignment->agent?->name ?? 'Unknown Agent' }}
+                        </strong>
+                    </p>
+
+                    <p>
+                        Assigned by:
+                        <strong>
+                            {{ $assignment->assignedBy?->name ?? 'System' }}
+                        </strong>
+                    </p>
+
+                    <small>
+                        {{ $assignment->created_at->format('d M Y, h:i A') }}
+                    </small>
+
                 </div>
 
-            @empty
+            </div>
 
-                <p class="detail-empty-history">
-                    No activity recorded yet.
-                </p>
+        @empty
 
-            @endforelse
+            <p class="detail-empty-history">
+                No assignment history recorded yet.
+            </p>
 
-        </div>
+        @endforelse
 
-    @endif
+    </div>
+
+@endif
+
 
 @endsection
 

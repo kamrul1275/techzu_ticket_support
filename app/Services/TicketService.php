@@ -280,6 +280,102 @@ if (
             return $ticket;
         });
     }
+ /**
+     * Automatically assign an open ticket
+     * to the agent with the least active tickets.
+     */
+    public function autoAssignTicket(
+        Ticket $ticket,
+        User $admin
+    ): Ticket {
+
+        return DB::transaction(function () use ($ticket, $admin) {
+
+            // 1. Only an admin can auto-assign
+            if (!$admin->isAdmin()) {
+                throw ValidationException::withMessages([
+                    'auto_assign' => 'Only admins can automatically assign tickets.',
+                ]);
+            }
+
+            // 2. Lock ticket and read its latest state
+            $ticket = Ticket::whereKey($ticket->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            // 3. Ticket must be open and unassigned
+            if (
+                $ticket->status !== 'open' ||
+                $ticket->assigned_agent_id !== null
+            ) {
+                throw ValidationException::withMessages([
+                    'auto_assign' => 'This ticket is no longer available for automatic assignment.',
+                ]);
+            }
+
+            // 4. Lock agent rows to serialize auto-assignment
+            // requests across different tickets
+            $agents = User::where('role', 'agent')
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get(['id', 'name']);
+
+            if ($agents->isEmpty()) {
+                throw ValidationException::withMessages([
+                    'auto_assign' => 'No support agents are available.',
+                ]);
+            }
+
+            // 5. Count active tickets for each agent
+            $workloads = Ticket::query()
+                ->select('assigned_agent_id')
+                ->selectRaw('COUNT(*) AS ticket_count')
+                ->whereIn('assigned_agent_id', $agents->pluck('id'))
+                ->whereNotIn('status', ['resolved', 'closed'])
+                ->groupBy('assigned_agent_id')
+                ->pluck('ticket_count', 'assigned_agent_id');
+
+            // 6. Select agent with lowest workload
+            $selectedAgent = null;
+            $lowestCount = PHP_INT_MAX;
+
+            foreach ($agents as $agent) {
+
+                $activeCount = (int) ($workloads[$agent->id] ?? 0);
+
+                if ($activeCount < $lowestCount) {
+                    $lowestCount = $activeCount;
+                    $selectedAgent = $agent;
+                }
+            }
+
+            // 7. Update ticket assignment
+            $ticket->assigned_agent_id = $selectedAgent->id;
+            $ticket->save();
+
+            // 8. Save assignment history
+            $ticket->assignments()->create([
+                'agent_id' => $selectedAgent->id,
+                'assigned_by' => $admin->id,
+                'method' => 'auto',
+            ]);
+
+            // 9. Save activity history
+            $ticket->activities()->create([
+                'user_id' => $admin->id,
+                'action' => 'auto_assigned',
+                'old_values' => [
+                    'assigned_agent_id' => null,
+                ],
+                'new_values' => [
+                    'assigned_agent_id' => $selectedAgent->id,
+                ],
+            ]);
+
+            return $ticket->load('assignedAgent');
+
+        }, 3);
+    }
 }
 
 
